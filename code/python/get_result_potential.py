@@ -16,6 +16,8 @@ def get_field(data, df1, df, time_size_max):
     space_size = data["r/a"].iloc[0]
     smearing_step = data["smearing_step"].iloc[0]
 
+    print(smearing_step)
+
     if time_size < time_size_max:
 
         x1 = data['wilson_loop'].to_numpy()
@@ -63,29 +65,48 @@ conf_type = "qc2dstag"
 # conf_sizes = ["40^4", "32^4"]
 conf_sizes = ["40^4"]
 
+# HYP_alpha = '1_0.5_0.5'
+# HYP_alpha = '0.75_0.6_0.3'
+HYP_alpha = '1_1_0.5'
+HYP_steps = 1
+APE_alpha = 0.8
+
 for monopole in ['/', 'monopoless']:
+    # for monopole in ['monopoless']:
     for conf_size in conf_sizes:
         if conf_size == '40^4':
-            # mu1 = ['0.05', '0.45']
-            mu1 = ['0.45']
+            conf_max = 700
+            # mu1 = ['0.05', '0.35', '0.45']
+            mu1 = ['0.05']
             chains = {"s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"}
         elif conf_size == '32^4':
+            conf_max = 2800
             mu1 = ['0.00']
             chains = {"/"}
         for mu in mu1:
             data = []
             for chain in chains:
-                for i in range(0, 700):
+                for i in range(0, conf_max):
                     # file_path = f"../../data/wilson_loop/{axis}/{monopole}/qc2dstag/{conf_size}/mu{mu}/{chain}/wilson_loop_{i:04}"
-                    file_path = f"../../data/potential/{monopole}/qc2dstag/{conf_size}/HYP2_APE/mu{mu}/{chain}/wilson_loops_0.7_{i:04}"
+                    file_path = f"../../data/potential/{monopole}/qc2dstag/{conf_size}/HYP{HYP_steps}_alpha={HYP_alpha}_APE_alpha={APE_alpha}/mu{mu}/{chain}/wilson_loops_{i:04}"
+                    # print(file_path)
 
                     if(os.path.isfile(file_path)):
+                        # print(file_path)
+                        # data.append(pd.read_csv(file_path, header=0,
+                        #                         names=["smearing_step", "T", "r/a", "wilson_loop"]))
+                        # try:
                         data.append(pd.read_csv(file_path, header=0,
-                                    names=["smearing_step", "T", "r/a", "wilson_loop"]))
+                                                names=["smearing_step", "T", "r/a", "wilson_loop"]))
+                        # except:
+                        #     pass
+                        # print("Deleting", file_path)
+                        # os.remove(file_path)
                         data[-1]["conf_num"] = i
             if len(data) == 0:
                 print("no data", conf_size, mu)
             elif len(data) != 0:
+                # try:
                 df = pd.concat(data)
 
                 # df = df[df['T'] <= 16]
@@ -128,4 +149,7 @@ for monopole in ['/', 'monopoless']:
                     pass
 
                 # df1.to_csv(f"{path_output}/potential_spatial_mu={mu}.csv", index=False)
-                df1.to_csv(f"{path_output}/potential_mu={mu}.csv", index=False)
+                df1.to_csv(
+                    f"{path_output}/potential_HYP{HYP_steps}_alpha={HYP_alpha}_APE_alpha={APE_alpha}_mu={mu}.csv", index=False)
+                # except:
+                #     pass
